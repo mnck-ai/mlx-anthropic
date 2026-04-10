@@ -59,7 +59,8 @@ async def messages(request: Request):
     backend_url = _state.get("backend_url", "http://localhost:8081")
     backend_model = _state.get("backend_model", req.model)
 
-    result = await handle_messages(req, backend_url, backend_model)
+    tool_parser = _state.get("tool_parser")
+    result = await handle_messages(req, backend_url, backend_model, tool_parser=tool_parser)
     if isinstance(result, StreamingResponse):
         return result
     return JSONResponse(result.model_dump())
