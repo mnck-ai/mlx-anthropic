@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "mlx-anthropic"
+version = "0.1.0"
+description = "Anthropic API endpoint for mlx-lm — run Claude-compatible models locally on Apple Silicon"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = [
+    "mlx-lm>=0.31.0",
+    "fastapi>=0.111.0",
+    "uvicorn[standard]>=0.29.0",
+    "pydantic>=2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "httpx>=0.27",  # for FastAPI TestClient
+]
+
+[project.scripts]
+mlx-anthropic = "mlx_anthropic.server:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mlx_anthropic*"]
