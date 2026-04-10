@@ -176,6 +176,23 @@ async def _stream_anthropic(
     for sse in buffered_events:
         yield sse
 
+    # Fallback: if the backend never sent a finish_reason chunk, close any open blocks.
+    # vllm-mlx sometimes ends with [DONE] without a trailing finish_reason:"stop" chunk.
+    if text_open or tool_open:
+        def _sse(event: str, data: dict[str, Any]) -> str:
+            return f"event: {event}\ndata: {json.dumps(data)}\n\n"
+
+        if text_open:
+            yield _sse("content_block_stop", {"type": "content_block_stop", "index": 0})
+        if tool_open:
+            yield _sse("content_block_stop", {"type": "content_block_stop", "index": tool_idx})
+        yield _sse("message_delta", {
+            "type": "message_delta",
+            "delta": {"stop_reason": "end_turn", "stop_sequence": None},
+            "usage": {"output_tokens": 0},
+        })
+        yield _sse("message_stop", {"type": "message_stop"})
+
 
 def _emit_tool_use_events(tool_calls: list[dict[str, Any]]) -> list[str]:
     """Synthesize Anthropic SSE events for parsed tool calls."""
