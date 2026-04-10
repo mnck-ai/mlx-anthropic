@@ -73,6 +73,8 @@ async def messages(request: Request):
 async def chat_completions(request: Request):
     body = await request.json()
     backend_url = _state.get("backend_url", "http://localhost:8081")
+    # Substitute backend model name so mlx-lm doesn't try to load an unknown model
+    body = {**body, "model": _state.get("backend_model", body.get("model", "local"))}
     async with httpx.AsyncClient(timeout=300) as client:
         resp = await client.post(
             f"{backend_url}/v1/chat/completions",
